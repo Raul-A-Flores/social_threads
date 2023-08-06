@@ -92,7 +92,7 @@ const AccountProfile = ({user, btnTitle}: Props) =>{
               values.profile_photo = imgRes[0].fileUrl;
             }
 
-        console.log(values)
+        // console.log(values)
       }
 
 

@@ -4,14 +4,16 @@ import {sidebarLinks} from '@/constants'
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { OrganizationSwitcher, SignOutButton, SignedIn } from '@clerk/nextjs';
+import { OrganizationSwitcher, SignOutButton, SignedIn , useAuth} from '@clerk/nextjs';
 import router, { Router } from 'next/router';
+
 
 
 function LeftSidebar(){
 
     const route = useRouter();
     const pathname = usePathname();
+    const { userId } = useAuth();
 
 
     return (
@@ -20,7 +22,10 @@ function LeftSidebar(){
             
                 {sidebarLinks.map((link) =>{
 
-                    const isActive = (pathname.includes(link.route) && link.route.length > 1 || pathname === link.route) 
+                    const isActive = (pathname.includes(link.route) && link.route.length > 1 || pathname === link.route)
+
+                    if(link.route === '/profile') link.route =`${link.route}/${userId}}`
+                     
                 
                     return(
                     <div>

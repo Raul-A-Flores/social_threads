@@ -1,6 +1,7 @@
 "use server"
 
 
+import { FilterQuery, SortOrder } from 'mongoose';
 import Thread from '../models/thread.model';
 import User from '../models/user.models';
 import { connectToDB } from '../mongoose';
@@ -92,5 +93,66 @@ export async function fetchUserPosts ( userId: string){
 
         
         
+    }
+}
+
+export async function fetchUsers({
+
+    userId,
+    searchString = '',
+    pageNumber = 1,
+    pageSize = 20,
+    sortBy = 'desc'
+    
+ }:{
+    userId: string;
+    searchString?: string;
+    pageNumber?: number;
+    pageSize?: number;
+    sortBy?: SortOrder;
+
+
+ }){
+
+    
+
+    try {
+        connectToDB();
+
+        const skipAmount = (pageNumber -1 ) * pageSize;
+
+        const regex = new RegExp(searchString, 'i')
+
+        const query: FilterQuery<typeof User> = {
+            id: { $ne: userId }
+        }
+
+        if(searchString.trim() !== ''){
+            query.$or = [
+                {username: { $regex: regex}},
+                { name: { $regex: regex }}
+            ]
+        }
+
+
+        const sortOptions = { createdAt: sortBy };
+
+        const usersQuery = User.find(query)
+            .sort(sortOptions)
+            .skip(skipAmount)
+            .limit(pageSize)
+
+
+        const toalUsersCount =  await User.countDocuments(query);
+
+        const users = await usersQuery.exec();
+
+        const isNext = toalUsersCount > skipAmount + users.length;
+
+        return { users, isNext }
+        
+
+    } catch (error: any) {
+        throw new Error(`Could not fetch all users ${error.message}`)
     }
 }

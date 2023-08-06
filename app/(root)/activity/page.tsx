@@ -1,7 +1,9 @@
 import { currentUser } from '@clerk/nextjs'
 import { redirect } from 'next/navigation';
-import { fetchUser } from '@/lib/actions/user.actions';
+import { fetchUser, getActivity } from '@/lib/actions/user.actions';
 import PostThread from '@/components/forms/PostThread';
+import Image from 'next/image'
+import Link from 'next/link';
 
 async function Page(){
 
@@ -15,13 +17,42 @@ async function Page(){
     if(!userInfo?.onboarded ) redirect('/onboarding')
 
     console.log(userInfo)
+
+    const activity = await getActivity(userInfo._id);
+
+    
     
     return(
-        <>
-            <h1 className="head-text">Create Thread</h1>
+        <section>
+            <h1 className="head-text">Activity</h1>
 
-            <PostThread  userId ={userInfo._id}/>
-        </>
+            <section className='mt-10 flex flex-col gap-5'>
+                {activity.length > 0 ? (
+                    <>
+                    {activity.map((activity)=>(
+                        <Link key={activity._id} href={`/thread/${activity.parentId}`}>
+                            <article className='activity-card'>
+                                <Image 
+                                    src={activity.author.image}
+                                    alt='profile picture'
+                                    height={20}
+                                    width={20}
+                                    />
+                                <p className='!text-small-regular text-light-1'>
+                                    <span className='mr-1 text-primary-500'>
+                                        {activity.author.name}
+                                    </span>{" "}
+                                    replied to your thread
+                                </p>
+
+                            </article>
+                        
+                        </Link>
+                    ))}
+                    </>
+                ) :<p className='!text-base-regular text-light-3'>No activity yet</p>}
+            </section>
+        </section>
 )
     
 }
